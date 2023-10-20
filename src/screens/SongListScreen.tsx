@@ -17,7 +17,7 @@ interface renderProps {
 }
 
 export const SongListScreen:FC<Props> = () => {
-    const {audioList ,togglePlayBack,setCurrentIndex,currentIndex,skipTo} = useAudio()
+    const {audioList ,togglePlayBack,setCurrentIndex,currentIndex,playSelectedSong} = useAudio()
     const navigation=useNavigation<any>()
     const convertTime = (milliseconds: number) => {
         if(milliseconds){
@@ -49,10 +49,10 @@ export const SongListScreen:FC<Props> = () => {
     const getName = (name: string) => name[0]+name[1]
 
     const loadNewSong = (item: any,index:number) => {
-         togglePlayBack(item)
+        playSelectedSong(item)
         // skipTo(item, index)
         setCurrentIndex(index)
-        //navigation.navigate('Home')
+
     }
 
     const renderItem = ({ item,index}:renderProps) => (
@@ -84,7 +84,7 @@ export const SongListScreen:FC<Props> = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#212433',
+        //backgroundColor: '#212433',
     },
     itemContainer: {
         flexDirection: 'row',

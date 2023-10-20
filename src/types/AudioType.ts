@@ -82,6 +82,7 @@ export type AudioContextType = {
     isRandom: boolean;
     isMusicPlaying: boolean;
     setIsMusicPlaying: (isMusicPlaying: boolean) => void;
+    playSelectedSong: (song: SingleAudioContextType)=>void;
 };
 
 export type UserContextType = {

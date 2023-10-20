@@ -8,19 +8,23 @@ import Entypo from "react-native-vector-icons/Entypo"
 import {Text, TouchableOpacity, View,StyleSheet} from "react-native";
 import tw from 'twrnc';
 import HomeScreen from '../screens/HomeScreen'
+import HomeStack from "./HomeStack";
+import {DefaultTheme} from "@react-navigation/native";
+import { useRoute } from '@react-navigation/native';
 
 
 const Tab = createBottomTabNavigator();
 
 
 function MyTabs() {
+    const navTheme = DefaultTheme;
     return (
         <Tab.Navigator
          screenOptions={{
 
             tabBarStyle: {
                  height: 70,
-               backgroundColor:'#212433',
+               backgroundColor: navTheme.colors.background,
                //borderTopWidth:0,
                 elevation: 15,
                 display: 'flex',
@@ -29,50 +33,34 @@ function MyTabs() {
                  fontSize:18,
 
              },
-             tabBarActiveTintColor: '#fff'
+             tabBarActiveTintColor: navTheme.colors.primary
          }}
         >
             <Tab.Screen
                 name="Home"
-                component={HomeScreen}
+                component={HomeStack}
                 options={{
+                    headerShown:false,
                     headerStyle: {
                         backgroundColor:'#212433',
                         elevation:0,
 
                     },
-                    header:(props)=><View style={[{height:90,backgroundColor:'#212433'},tw`flex flex-row items-center justify-between`]}>
-                        <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
-                            <Ionicons name="caret-back-outline" size={30} color="#fff" style={{padding:8}} />
-                        </TouchableOpacity>
-                        <Text style={tw`text-white text-2xl`}>Ma musique</Text>
-                        <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> {}}>
-                            <Entypo name="sound-mix" size={30} color="#fff" style={{padding:8}} />
-                        </TouchableOpacity>
-                    </View>,
                     tabBarLabel:"Music",
                     tabBarIcon:({color})=> <Icon name={"musical-notes-outline"}  size={30} color={color} />
                 }}
             />
-            {/*<Tab.Screen*/}
-            {/*    name="Playlists"*/}
-            {/*    component={PlaylistScreen}*/}
-            {/*    options={{*/}
-            {/*        tabBarLabel:"Playlists",*/}
-            {/*        tabBarIcon:({color})=> <Material name={"playlist-music-outline"}  size={30} color={color} />*/}
-            {/*    }}*/}
-            {/*/>*/}
             <Tab.Screen
                 name="Favorites"
                 component={FavoriteScreen}
                 options={{
-                    header:(props)=><View style={[{height:80,backgroundColor:'#212433'},tw`flex flex-row items-center justify-between`]}>
+                    header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
                         <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
-                            <Ionicons name="caret-back-outline" size={30} color="#fff" style={{padding:8}} />
+                            <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Mes favorites</Text>
                         <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> {}}>
-                            <Ionicons name="search" size={30} color="#fff" style={{padding:8}} />
+                            <Ionicons name="search" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                     </View>,
                     tabBarLabel:"Favorites",
@@ -83,13 +71,13 @@ function MyTabs() {
                 name="Radio"
                 component={RadioScreen}
                 options={{
-                    header:(props)=><View style={[{height:80,backgroundColor:'#212433'},tw`flex flex-row items-center justify-between`]}>
+                    header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
                         <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
-                            <Ionicons name="caret-back-outline" size={30} color="#fff" style={{padding:8}} />
+                            <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Radios</Text>
                         <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> {}}>
-                            <Ionicons name="search" size={30} color="#fff" style={{padding:8}} />
+                            <Ionicons name="search" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                     </View>,
                     tabBarLabel:"Radios",
@@ -100,13 +88,13 @@ function MyTabs() {
                 name="Videos"
                 component={VideoScreen}
                 options={{
-                    header:(props)=><View style={[{height:80,backgroundColor:'#212433'},tw`flex flex-row items-center justify-between`]}>
+                    header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
                         <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
-                            <Ionicons name="caret-back-outline" size={30} color="#fff" style={{padding:8}} />
+                            <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Mes vidéos</Text>
                         <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> {}}>
-                            <Ionicons name="search" size={30} color="#fff" style={{padding:8}} />
+                            <Ionicons name="search" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                     </View>,
                     tabBarLabel:"Videos",
@@ -121,7 +109,7 @@ export  default MyTabs;
 
 const styles = StyleSheet.create({
     backButton:{
-        backgroundColor: '#22313F',
+        backgroundColor: '#1d2b37',
         shadowColor: '#000',
         shadowOffset: {
             width: 0,

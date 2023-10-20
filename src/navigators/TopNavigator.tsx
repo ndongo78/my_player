@@ -4,6 +4,7 @@ import {SafeAreaView, Text, StatusBar, StyleSheet, Platform} from 'react-native'
 import {DefaultTheme, NavigationContainer} from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import {AlbumScreen, PlaylistScreen, SongListScreen} from "../screens";
+import Player from "../screens/Player";
 
 
 const Tab = createMaterialTopTabNavigator();
@@ -11,7 +12,11 @@ const Tab = createMaterialTopTabNavigator();
 
 const TopNavigator = () => {
     const navTheme = DefaultTheme;
-    navTheme.colors.background = '#212433';
+  //  navTheme.colors.background = '#212433';
+  //   navTheme.colors.background = '#050A30';
+  //   navTheme.colors.text='#C0C0C0'
+  //   navTheme.colors.primary='#FFD700'
+  //   navTheme.colors.secondary='#F5F5F5'
 
     return (
         <SafeAreaView style={styles.container}>
@@ -21,12 +26,12 @@ const TopNavigator = () => {
                 <Tab.Navigator
                  style={{
                      elevation:0,
-                     backgroundColor:'#212433'
+                     backgroundColor:navTheme.colors.background,
                  }}
                  screenOptions={{
                      tabBarStyle: {
                          elevation:0,
-                         backgroundColor:'#212433'
+                         backgroundColor:navTheme.colors.background,
                      },
                  }}
                 >
@@ -35,7 +40,7 @@ const TopNavigator = () => {
                         component={SongListScreen}
                         options={{
                             tabBarStyle: {
-                                backgroundColor:'#212433',
+                                backgroundColor: navTheme.colors.background,
                             },
                             tabBarLabelStyle: {
                                 color: '#fff',
@@ -48,7 +53,7 @@ const TopNavigator = () => {
                         component={PlaylistScreen}
                         options={{
                             tabBarStyle: {
-                                backgroundColor:'#212433',
+                                backgroundColor:navTheme.colors.background,
                             },
                             tabBarLabelStyle: {
                                 color: '#fff',
@@ -61,7 +66,7 @@ const TopNavigator = () => {
                         component={AlbumScreen}
                         options={{
                             tabBarStyle: {
-                                backgroundColor:'#212433',
+                                backgroundColor:navTheme.colors.background,
                             },
                             tabBarLabelStyle: {
                                 color: '#fff',
@@ -69,6 +74,7 @@ const TopNavigator = () => {
                             },
                         }}
                     />
+
                 </Tab.Navigator>
 
             </NavigationContainer>

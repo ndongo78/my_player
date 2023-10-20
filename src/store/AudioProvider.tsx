@@ -1,19 +1,6 @@
-import React, {createContext, useContext, useRef, useState} from 'react';
-import {
-    Alert,
-    Animated,
-    Dimensions,
-    ImageSourcePropType,
-} from 'react-native';
-import TrackPlayer, {
-    Capability,
-    Event,
-    RepeatMode,
-    State,
-    usePlaybackState,
-    useProgress,
-    useTrackPlayerEvents,
-} from 'react-native-track-player';
+import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
+import {Alert, Animated, Dimensions,} from 'react-native';
+import TrackPlayer, {Capability, State, usePlaybackState,} from 'react-native-track-player';
 import * as MediaLibrary from 'expo-media-library';
 import {AudioContextType, ChildProps, SingleAudioContextType} from "../types/AudioType";
 
@@ -40,6 +27,7 @@ const initialeState: AudioContextType = {
     isRandom: false,
     isMusicPlaying: true,
     setIsMusicPlaying: () => {},
+    playSelectedSong:(t:SingleAudioContextType)=>{}
 };
 
 
@@ -63,8 +51,8 @@ const AudioProvider = ({ children }: ChildProps) => {
     const [currentSong, setCurrentSong] = React.useState(
         initialeState.currentSong,
     );
-    let state = useRef(initialeState.state).current;
-    state = State;
+   // let state = useRef(initialeState.state).current;
+
     const [isPlaying, setIsPlaying] = React.useState(initialeState.isPlaying);
     const [isMusicPlaying, setIsMusicPlaying] = React.useState(initialeState.isMusicPlaying);
     const [errors, setErrors] = React.useState<any[] | unknown>([]);
@@ -87,16 +75,17 @@ const AudioProvider = ({ children }: ChildProps) => {
         if (status === 'granted') {
             let songs = await MediaLibrary.getAssetsAsync({
                 mediaType: 'audio',
-                sortBy: 'modificationTime',
+                sortBy: 'creationTime',
 
             });
             songs = await MediaLibrary.getAssetsAsync({
                 mediaType: 'audio',
                 first: songs.totalCount,
-                sortBy:'modificationTime',
+                sortBy:'creationTime',
             });
 
             const audioArray = songs.assets.map(song => {
+
                 return {
                     id: Number(song.id),
                     url: song.uri,
@@ -133,10 +122,11 @@ const AudioProvider = ({ children }: ChildProps) => {
                     });
 
                 } catch (error) {
-                    Alert.alert(
-                        'Désole',
-                        "Une erreur s'est produite lors de l'initialisation du lecteur audio.",
-                    );
+                    console.log("Error", error);
+                    // Alert.alert(
+                    //     'Désole',
+                    //     "Une erreur s'est produite lors de l'initialisation du lecteur audio.",
+                    // );
                 }
             };
             setAudioList(audioArray);
@@ -172,7 +162,10 @@ const AudioProvider = ({ children }: ChildProps) => {
 
 
     React.useEffect(() => {
-            getPermission();
+        getPermission().then(async (r) => {
+            const playerState = await TrackPlayer.getState();
+            console.log('Player state:', playerState);
+        });
         //   try {  scrollX.addListener(({ value }) => {
         //         const index = Math.round(value / width);
         //         setCurrentIndex(index);
@@ -189,6 +182,23 @@ const AudioProvider = ({ children }: ChildProps) => {
         //
         // }
     }, []);
+
+    const getCurrentSong =async ()=>{
+       try {
+           let audioIndex:number | null = await TrackPlayer.getCurrentTrack();
+           setCurrentIndex(audioIndex);
+          let cureent= await TrackPlayer.getTrack(audioIndex)
+           setCurrentSong(cureent);
+           // if (audioIndex != null) {
+           //      await TrackPlayer.getTrack(audioIndex)
+           //     console.log('currentSong:', audioIndex);
+           // }
+       }catch (e) {
+           console.log('getCurrentSong',e)
+       }
+    }
+
+    useEffect(()=>{getCurrentSong()},[currentSong]);
 
 
 
@@ -219,37 +229,78 @@ const AudioProvider = ({ children }: ChildProps) => {
         }
     };
     //toggle play/pause
-    const togglePlayBack = async (playBackState: any) => {
+    // const togglePlayBack = async (playBackState: any) => {
+    //     try {
+    //         const state = await TrackPlayer.getState();
+    //         if (state === State.Playing) {
+    //             await TrackPlayer.pause();
+    //             setIsPlaying(false);
+    //             setIsMusicPlaying(true);
+    //         } else {
+    //             await TrackPlayer.play();
+    //             setIsPlaying(true);
+    //             setIsMusicPlaying(true)
+    //         }
+    //         if (currentIndex !== audioList.indexOf(playBackState) && playBackState !== State.Playing) {
+    //             setCurrentIndex(audioList.indexOf(playBackState));
+    //             await skipTo(audioList.indexOf(playBackState));
+    //             const currentSong = TrackPlayer.getTrack(
+    //                 audioList.indexOf(playBackState),
+    //             );
+    //             setCurrentSong(currentSong);
+    //             setIsPlaying(true);
+    //         }
+    //     } catch (error) {
+    //         console.error("error", error);
+    //         setErrors(error);
+    //         // Alert.alert(
+    //         //   'Oups',
+    //         //   "Eurreur lors de l'initialisation du lecteur audio.",
+    //         // );
+    //     }
+    // };
+
+ const togglePlayBack=() => {}
+
+    const   playSelectedSong=async (audio:any)=> {
         try {
             const state = await TrackPlayer.getState();
-            if (state === State.Playing) {
-                await TrackPlayer.pause();
-                setIsPlaying(false);
-                setIsMusicPlaying(true);
-            } else {
-                await TrackPlayer.play();
-                setIsPlaying(true);
-                setIsMusicPlaying(true)
-            }
-            if (currentIndex !== audioList.indexOf(playBackState) && playBackState !== State.Playing) {
-                setCurrentIndex(audioList.indexOf(playBackState));
-                await skipTo(audioList.indexOf(playBackState));
-                const currentSong = TrackPlayer.getTrack(
-                    audioList.indexOf(playBackState),
-                );
-                setCurrentSong(currentSong);
-                setIsPlaying(true);
-            }
-        } catch (error) {
-             console.error("error", error);
-            setErrors(error);
-            // Alert.alert(
-            //   'Oups',
-            //   "Eurreur lors de l'initialisation du lecteur audio.",
-            // );
-        }
-    };
+            console.log('state',state);
+            const trackIndex= audioList.indexOf(audio);
+            const currentAudio = audioList[trackIndex];
+            setCurrentSong(currentAudio);
+            await TrackPlayer.skip(trackIndex);
+            await TrackPlayer.play();
 
+            // if (state === State.Playing) {
+            //     // Le lecteur est en cours de lecture, mettez en pause.
+            //     await TrackPlayer.reset();
+            // } else {
+            //     // Le lecteur est en pause, commencez la lecture.
+            //     await TrackPlayer.play();
+            // }
+            //
+            // // Mise à jour de l'état de lecture dans votre composant.
+            // // Exemple : setIsPlaying(true);
+            //
+            // if (currentIndex !== audioList.indexOf(audio) && audio !== State.Playing) {
+            //     // L'utilisateur a cliqué sur une nouvelle chanson.
+            //     setCurrentIndex(audioList.indexOf(audio));
+            //
+            //     // Changez la piste en cours de lecture en utilisant skipTo.
+            //     await TrackPlayer.skip(audioList.indexOf(audio));
+            //
+            //     // Mettez à jour la chanson actuellement en cours de lecture.
+            //     const currentSong = await TrackPlayer.getTrack(audioList.indexOf(audio));
+            //
+            //     // Mise à jour des informations sur la chanson actuelle dans votre composant.
+            //     // Exemple : setCurrentSong(currentSong);
+            // }
+        } catch (error) {
+            console.error("Erreur lors de la gestion de la lecture :", error);
+            // Gérez les erreurs ici.
+        }
+    }
 
 
     const skipToNext = () => {
@@ -305,7 +356,6 @@ const AudioProvider = ({ children }: ChildProps) => {
                 songSlider,
                 togglePlayBack,
                 playState,
-                state,
                 setCurrentIndex,
                 skipToNext,
                 skipToPrevious,
@@ -318,6 +368,7 @@ const AudioProvider = ({ children }: ChildProps) => {
                 isRandom,
                 isMusicPlaying,
                 setIsMusicPlaying,
+                playSelectedSong
             }}>
             {children}
         </AudioContexts.Provider>
