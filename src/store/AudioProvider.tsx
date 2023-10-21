@@ -3,7 +3,7 @@ import {Alert, Animated, Dimensions,} from 'react-native';
 import TrackPlayer, {Capability, State, usePlaybackState,} from 'react-native-track-player';
 import * as MediaLibrary from 'expo-media-library';
 import {AudioContextType, ChildProps, SingleAudioContextType} from "../types/AudioType";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -13,10 +13,8 @@ const initialeState: AudioContextType = {
     scrollX: new Animated.Value(0),
     songSlider: null,
     togglePlayBack: () => { },
-    skipTo: () => { },
     currentSong: null,
     playState: null,
-    state: null,
     setCurrentIndex: () => { },
     skipToNext: () => { },
     skipToPrevious: () => { },
@@ -27,7 +25,12 @@ const initialeState: AudioContextType = {
     isRandom: false,
     isMusicPlaying: true,
     setIsMusicPlaying: () => {},
-    playSelectedSong:(t:SingleAudioContextType)=>{}
+    playSelectedSong:(t:SingleAudioContextType)=>{},
+    setMyFavorites:()=>{},
+    isPlayList:'songLists',
+    setIsPlayList:()=>{},
+    setIsPlaying:()=>{},
+    setCurrentSong:( )=> {},
 };
 
 
@@ -55,6 +58,7 @@ const AudioProvider = ({ children }: ChildProps) => {
 
     const [isPlaying, setIsPlaying] = React.useState(initialeState.isPlaying);
     const [isMusicPlaying, setIsMusicPlaying] = React.useState(initialeState.isMusicPlaying);
+    const [isPlayList, setIsPlayList] = useState(initialeState.isPlayList);
     const [errors, setErrors] = React.useState<any[] | unknown>([]);
     //radio state
     const [isPlayingRadio, setIsPlayingRadio] = React.useState<boolean>(false);
@@ -83,9 +87,7 @@ const AudioProvider = ({ children }: ChildProps) => {
                 first: songs.totalCount,
                 sortBy:'creationTime',
             });
-
             const audioArray = songs.assets.map(song => {
-
                 return {
                     id: Number(song.id),
                     url: song.uri,
@@ -120,7 +122,7 @@ const AudioProvider = ({ children }: ChildProps) => {
                             duration: item.duration,
                         });
                     });
-
+                  await AsyncStorage.setItem("arrayAudio",JSON.stringify(audioArray));
                 } catch (error) {
                     console.log("Error", error);
                     // Alert.alert(
@@ -131,27 +133,59 @@ const AudioProvider = ({ children }: ChildProps) => {
             };
             setAudioList(audioArray);
             await setupPlayer();
-            let trackIndex = await TrackPlayer.getCurrentTrack();
+            let trackIndex:any = await TrackPlayer.getCurrentTrack();
             setCurrentIndex(trackIndex);
+
         }
     };
 
-    //next song on scroll
-    const skipTo = async (trackId: number) => {
+    const onSongChange = (newSong:any) => {
+        // Mettez à jour l'état currentSong
+        setCurrentSong(newSong);
+
+        // Convertissez les informations du morceau en JSON
+        const songJSON = JSON.stringify(newSong);
+
+        // Sauvegardez les informations du morceau dans AsyncStorage
+        AsyncStorage.setItem('currentSong', songJSON)
+            .then(() => {
+              //  console.log('Morceau actuel sauvegardé avec succès dans AsyncStorage.');
+            })
+            .catch((error:any) => {
+                console.error('Erreur lors de la sauvegarde du morceau actuel :', error);
+            });
+    };
+// Au démarrage de l'application, récupérez le morceau actuel depuis AsyncStorage
+    const loadCurrentSongFromStorage = async () => {
         try {
-            const randomIndex = Math.floor(Math.random() * audioList.length);
-            //if the end of the list
-            if (trackId === audioList.length - 1) {
-                await TrackPlayer.skip(  isRandom ? randomIndex:audioList.indexOf(audioList[0]));
-                setCurrentIndex(0);
+            const songArray = await AsyncStorage.getItem('arrayAudio');
+            const songJSON = await AsyncStorage.getItem('currentSong');
+            if (songJSON && songArray) {
+                // Si des informations de morceau ont été trouvées, analysez-les en tant qu'objet
+                const currentSongFrom = JSON.parse(songJSON);
+                const songArrayParsed = JSON.parse(songArray);
+                let audioIndex:any = songArrayParsed.findIndex((s:any) => s.id === currentSongFrom.id)
+                // console.log('songArray',audioIndex);
+                // console.log("state local : " + audioList)
+                // if(state ==State.Ready) {
+                //     const songIndex= audioList.indexOf(currentSongFrom);
+                //     console.log("state local : " + audioList)
+                //   //  TrackPlayer.skip())
+                // }
+               // console.log('Current',currentSong);
+               // setCurrentSong(currentSong);
             } else {
-                await TrackPlayer.skip(isRandom ? randomIndex :trackId);
+                // Aucune information de morceau n'a été trouvée dans AsyncStorage
             }
         } catch (error) {
-            // console.log("error skip", error);
-            setErrors(error);
+            console.error('Erreur lors de la récupération du morceau actuel depuis AsyncStorage :', error);
         }
     };
+
+// Appelez la fonction pour récupérer le morceau actuel au démarrage de l'application
+
+
+
 
     //play random song
     const playRandom = async () => {
@@ -160,39 +194,60 @@ const AudioProvider = ({ children }: ChildProps) => {
 
 
 
-
     React.useEffect(() => {
         getPermission().then(async (r) => {
-            const playerState = await TrackPlayer.getState();
-            console.log('Player state:', playerState);
+            // const playerState = await TrackPlayer.getState();
+           const favJSON= await  AsyncStorage.getItem('favorites')
+            if(favJSON){
+              const favorites= JSON.parse(favJSON)
+              setMyFavorites(favorites)
+            }
         });
-        //   try {  scrollX.addListener(({ value }) => {
-        //         const index = Math.round(value / width);
-        //         setCurrentIndex(index);
-        //         const currentSong = TrackPlayer.getTrack(index);
-        //         setCurrentSong(currentSong);
-        //     });
-        //     return () => {
-        //         scrollX.removeAllListeners();
-        //         TrackPlayer.destroy();
-        //     }
-        // } catch (error) {
-        //     // console.log("error", error);
-        //     setErrors(error);
-        //
-        // }
     }, []);
+
+    const checkPlayList = async () => {
+        if(isPlayList ==='playlists'){
+
+        }else if(isPlayList==='favorites'){
+          try {
+              await TrackPlayer.reset();
+              // @ts-ignore
+              await  TrackPlayer.add(myFavorites)
+              await TrackPlayer.skip(0);
+              await TrackPlayer.play();
+              setIsPlaying(true);
+              setCurrentSong(myFavorites[0]);
+          }catch (e) {
+
+          }
+
+        }else {
+            try {
+                await TrackPlayer.reset();
+                // @ts-ignore
+                await  TrackPlayer.add(audioList)
+                await TrackPlayer.skip(0);
+                await TrackPlayer.play();
+                setIsPlaying(true);
+                setCurrentSong(audioList[0]);
+            }catch (e) {
+
+            }
+        }
+    }
+
+    useEffect(() => {
+        checkPlayList()
+    }, [isPlayList]);
+
 
     const getCurrentSong =async ()=>{
        try {
-           let audioIndex:number | null = await TrackPlayer.getCurrentTrack();
+           let audioIndex:any = await TrackPlayer.getCurrentTrack();
            setCurrentIndex(audioIndex);
           let cureent= await TrackPlayer.getTrack(audioIndex)
+           onSongChange(cureent)
            setCurrentSong(cureent);
-           // if (audioIndex != null) {
-           //      await TrackPlayer.getTrack(audioIndex)
-           //     console.log('currentSong:', audioIndex);
-           // }
        }catch (e) {
            console.log('getCurrentSong',e)
        }
@@ -224,78 +279,60 @@ const AudioProvider = ({ children }: ChildProps) => {
 
     //add to favorite
     const addToFavorite = async (item: SingleAudioContextType) => {
-        if (currentIndex === audioList.indexOf(item)) {
-            setMyFavorites([...myFavorites, item]);
-        }
+           const favFromJson= await  AsyncStorage.getItem('favorites')
+            if(favFromJson){
+                const FavArray = JSON.parse(favFromJson)
+                const existing= FavArray.find((audio:SingleAudioContextType)=>audio.id==item.id);
+              if(!existing){
+                  FavArray.push(item)
+                  await  AsyncStorage.setItem('favorites', JSON.stringify(FavArray))
+              }
+            }else{
+                const foviries=[];
+                foviries.push(item)
+                await  AsyncStorage.setItem('favorites', JSON.stringify(foviries))
+            }
     };
-    //toggle play/pause
-    // const togglePlayBack = async (playBackState: any) => {
-    //     try {
-    //         const state = await TrackPlayer.getState();
-    //         if (state === State.Playing) {
-    //             await TrackPlayer.pause();
-    //             setIsPlaying(false);
-    //             setIsMusicPlaying(true);
-    //         } else {
-    //             await TrackPlayer.play();
-    //             setIsPlaying(true);
-    //             setIsMusicPlaying(true)
-    //         }
-    //         if (currentIndex !== audioList.indexOf(playBackState) && playBackState !== State.Playing) {
-    //             setCurrentIndex(audioList.indexOf(playBackState));
-    //             await skipTo(audioList.indexOf(playBackState));
-    //             const currentSong = TrackPlayer.getTrack(
-    //                 audioList.indexOf(playBackState),
-    //             );
-    //             setCurrentSong(currentSong);
-    //             setIsPlaying(true);
-    //         }
-    //     } catch (error) {
-    //         console.error("error", error);
-    //         setErrors(error);
-    //         // Alert.alert(
-    //         //   'Oups',
-    //         //   "Eurreur lors de l'initialisation du lecteur audio.",
-    //         // );
-    //     }
-    // };
 
- const togglePlayBack=() => {}
+ const togglePlayBack=async () => {
+     const state = await TrackPlayer.getState();
+     if (state === State.Playing) {
+         setIsPlaying(false);
+         await TrackPlayer.pause();
+     }
+     if (state !== State.Playing){
+        await TrackPlayer.play();
+        setIsPlaying(true);
 
-    const   playSelectedSong=async (audio:any)=> {
+     }
+
+ }
+
+    const   playSelectedSong=async (audio:any,typ:string)=> {
         try {
-            const state = await TrackPlayer.getState();
-            console.log('state',state);
-            const trackIndex= audioList.indexOf(audio);
-            const currentAudio = audioList[trackIndex];
-            setCurrentSong(currentAudio);
-            await TrackPlayer.skip(trackIndex);
-            await TrackPlayer.play();
 
-            // if (state === State.Playing) {
-            //     // Le lecteur est en cours de lecture, mettez en pause.
-            //     await TrackPlayer.reset();
-            // } else {
-            //     // Le lecteur est en pause, commencez la lecture.
-            //     await TrackPlayer.play();
-            // }
-            //
-            // // Mise à jour de l'état de lecture dans votre composant.
-            // // Exemple : setIsPlaying(true);
-            //
-            // if (currentIndex !== audioList.indexOf(audio) && audio !== State.Playing) {
-            //     // L'utilisateur a cliqué sur une nouvelle chanson.
-            //     setCurrentIndex(audioList.indexOf(audio));
-            //
-            //     // Changez la piste en cours de lecture en utilisant skipTo.
-            //     await TrackPlayer.skip(audioList.indexOf(audio));
-            //
-            //     // Mettez à jour la chanson actuellement en cours de lecture.
-            //     const currentSong = await TrackPlayer.getTrack(audioList.indexOf(audio));
-            //
-            //     // Mise à jour des informations sur la chanson actuelle dans votre composant.
-            //     // Exemple : setCurrentSong(currentSong);
-            // }
+            if(typ==='songList') {
+                try {
+                    const trackIndex= audioList.indexOf(audio);
+                    const currentAudio = audioList[trackIndex];
+                    setCurrentSong(currentAudio);
+                        await TrackPlayer.skip(trackIndex);
+                        await TrackPlayer.play();
+                        setIsPlaying(true);
+
+                }catch (e) {
+                    console.log(e)
+                }
+
+            }
+            if (typ ==="favorite"){
+                const trackIndex= myFavorites.indexOf(audio);
+                const currentAudio = myFavorites[trackIndex];
+                setCurrentSong(currentAudio);
+                await TrackPlayer.skip(trackIndex);
+                await TrackPlayer.play();
+                setIsPlaying(true);
+            }
         } catch (error) {
             console.error("Erreur lors de la gestion de la lecture :", error);
             // Gérez les erreurs ici.
@@ -359,7 +396,6 @@ const AudioProvider = ({ children }: ChildProps) => {
                 setCurrentIndex,
                 skipToNext,
                 skipToPrevious,
-                skipTo,
                 currentSong,
                 isPlaying,
                 addToFavorite,
@@ -368,7 +404,12 @@ const AudioProvider = ({ children }: ChildProps) => {
                 isRandom,
                 isMusicPlaying,
                 setIsMusicPlaying,
-                playSelectedSong
+                playSelectedSong,
+                setMyFavorites,
+                setIsPlayList,
+                isPlayList,
+                setCurrentSong,
+                setIsPlaying
             }}>
             {children}
         </AudioContexts.Provider>

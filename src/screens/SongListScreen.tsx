@@ -17,7 +17,7 @@ interface renderProps {
 }
 
 export const SongListScreen:FC<Props> = () => {
-    const {audioList ,togglePlayBack,setCurrentIndex,currentIndex,playSelectedSong} = useAudio()
+    const {audioList ,setCurrentIndex,currentIndex,playSelectedSong} = useAudio()
     const navigation=useNavigation<any>()
     const convertTime = (milliseconds: number) => {
         if(milliseconds){
@@ -48,21 +48,21 @@ export const SongListScreen:FC<Props> = () => {
 
     const getName = (name: string) => name[0]+name[1]
 
-    const loadNewSong = (item: any,index:number) => {
-        playSelectedSong(item)
+    const loadNewSong = (item: any,index:number,typ:string) => {
+        playSelectedSong(item,typ)
         // skipTo(item, index)
         setCurrentIndex(index)
 
     }
 
     const renderItem = ({ item,index}:renderProps) => (
-        <TouchableOpacity style={styles.itemContainer} onPress={()=>loadNewSong(item,index)}>
+        <TouchableOpacity style={styles.itemContainer} onPress={()=>loadNewSong(item,index,'songList')}>
             <View style={[styles.containerTitle,{backgroundColor: currentIndex === index ? "#2fa597" :"#ccc" }]}>
                 <Text style={[styles.itemTitle]}>{getName(item.title)}</Text>
             </View>
             {/* <Image style={styles.image} source={require('../images/cover.jpg')} /> */}
             <View >
-                <Text style={styles.title}>{item.title.slice(0,-4)}</Text>
+                <Text style={[styles.title]}>{item.title.slice(0,-4)}</Text>
             </View>
         </TouchableOpacity>
     )

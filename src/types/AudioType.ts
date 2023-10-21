@@ -9,7 +9,7 @@ export type SingleAudioContextType = {
     artwork: ImageSourcePropType;
     url: string;
 };
-import React from "react";
+import React, {Dispatch, SetStateAction} from "react";
 
 
 export type DownloaderTypes = {
@@ -64,14 +64,12 @@ export type AudioContextType = {
         artwork: ImageSourcePropType;
         url: string;
     }[];
-    currentIndex: number | null;
+    currentIndex: number | 0;
     scrollX: Animated.Value;
     songSlider: any;
-    togglePlayBack: (number: number) => void;
-    skipTo: (number: number, index: number) => void;
+    togglePlayBack: () => void;
     currentSong: any;
     playState: any;
-    state: any;
     setCurrentIndex: (number: number) => void;
     skipToNext: () => void;
     skipToPrevious: () => void;
@@ -82,7 +80,12 @@ export type AudioContextType = {
     isRandom: boolean;
     isMusicPlaying: boolean;
     setIsMusicPlaying: (isMusicPlaying: boolean) => void;
-    playSelectedSong: (song: SingleAudioContextType)=>void;
+    playSelectedSong: (song: SingleAudioContextType,typ:string)=>void;
+    setMyFavorites:Dispatch<SetStateAction<SingleAudioContextType[]>>
+    isPlayList: string;
+    setIsPlayList:Dispatch<SetStateAction<string>>
+    setCurrentSong:Dispatch<SetStateAction<SingleAudioContextType[]>>
+    setIsPlaying:Dispatch<SetStateAction<boolean>>
 };
 
 export type UserContextType = {

@@ -9,7 +9,8 @@ export default function App() {
   navTheme.colors.background = '#050A30';
     navTheme.colors.text='#C0C0C0'
     navTheme.colors.primary='#FFD700'
-    navTheme.colors.secondary='#F5F5F5'
+    // @ts-ignore
+  navTheme.colors.secondary='#F5F5F5'
 
   return (
       <AudioProvider>
