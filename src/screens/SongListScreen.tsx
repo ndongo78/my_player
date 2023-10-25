@@ -5,6 +5,7 @@ import Ant from 'react-native-vector-icons/Entypo'
 
 import {useAudio} from "../store/AudioProvider";
 import {SingleAudioContextType} from "../types/AudioType";
+import {SwipeListView} from "react-native-swipe-list-view";
 
 
 interface Props {
@@ -17,7 +18,7 @@ interface renderProps {
 }
 
 export const SongListScreen:FC<Props> = () => {
-    const {audioList ,setCurrentIndex,currentIndex,playSelectedSong} = useAudio()
+    const {audioList ,setCurrentIndex,currentIndex,playSelectedSong,setIsPlayList} = useAudio()
     const navigation=useNavigation<any>()
     const convertTime = (milliseconds: number) => {
         if(milliseconds){
@@ -49,6 +50,7 @@ export const SongListScreen:FC<Props> = () => {
     const getName = (name: string) => name[0]+name[1]
 
     const loadNewSong = (item: any,index:number,typ:string) => {
+        setIsPlayList('songList')
         playSelectedSong(item,typ)
         // skipTo(item, index)
         setCurrentIndex(index)
@@ -66,14 +68,24 @@ export const SongListScreen:FC<Props> = () => {
             </View>
         </TouchableOpacity>
     )
+    const renderHiddenItem =(data:any, rowMap:any)=><View></View>
+    const onRowDidOpen=(data:any)=>{}
 
     return (
         <View style={styles.container}>
-            <FlatList
-            data={audioList}
-            renderItem={renderItem}
-            keyExtractor={item => item.id.toString()}
-            style={styles.list}
+            <SwipeListView
+                disableRightSwipe
+                data={audioList}
+                renderItem={renderItem}
+                renderHiddenItem={renderHiddenItem}
+                leftOpenValue={75}
+                rightOpenValue={-50}
+                previewRowKey={"0"}
+                previewOpenValue={-40}
+                previewOpenDelay={3000}
+                onRowDidOpen={onRowDidOpen}
+                closeOnScroll={true}
+                keyExtractor={(list:any)=> list.id}
             />
         </View>
     )

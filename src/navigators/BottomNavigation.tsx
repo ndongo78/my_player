@@ -9,8 +9,10 @@ import {Text, TouchableOpacity, View,StyleSheet} from "react-native";
 import tw from 'twrnc';
 import HomeScreen from '../screens/HomeScreen'
 import HomeStack from "./HomeStack";
-import {DefaultTheme} from "@react-navigation/native";
+import {DefaultTheme, useNavigation} from "@react-navigation/native";
 import { useRoute } from '@react-navigation/native';
+import MyList from "../components/SingleRadio";
+import {useAudio} from "../store/AudioProvider";
 
 
 const Tab = createBottomTabNavigator();
@@ -18,6 +20,8 @@ const Tab = createBottomTabNavigator();
 
 function MyTabs() {
     const navTheme = DefaultTheme;
+    const {setIsSearch,isSearch}=useAudio()
+    const navigation=useNavigation()
     return (
         <Tab.Navigator
          screenOptions={{
@@ -55,7 +59,7 @@ function MyTabs() {
                 component={FavoriteScreen}
                 options={{
                     header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
-                        <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
+                        <TouchableOpacity style={[styles.backButton,]} onPress={()=> navigation.goBack()}>
                             <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Mes favorites</Text>
@@ -69,14 +73,14 @@ function MyTabs() {
             />
             <Tab.Screen
                 name="Radio"
-                component={RadioScreen}
+                component={MyList}
                 options={{
                     header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
-                        <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
+                        <TouchableOpacity style={[styles.backButton,]} onPress={()=> navigation.goBack()}>
                             <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Radios</Text>
-                        <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> {}}>
+                        <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> setIsSearch(!isSearch)}>
                             <Ionicons name="search" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                     </View>,
@@ -89,7 +93,7 @@ function MyTabs() {
                 component={VideoScreen}
                 options={{
                     header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
-                        <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
+                        <TouchableOpacity style={[styles.backButton,]} onPress={()=> navigation.goBack()}>
                             <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Mes vidéos</Text>

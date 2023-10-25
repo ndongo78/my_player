@@ -1,5 +1,5 @@
-import {DefaultTheme, useNavigation} from '@react-navigation/native'
-import React, {FC, useEffect} from 'react'
+import {DefaultTheme, useNavigation, useFocusEffect} from '@react-navigation/native'
+import React, {FC, useCallback, useEffect, useState} from 'react'
 import {StyleSheet, Text, View, FlatList, Image, TouchableOpacity, ImageSourcePropType, Alert} from 'react-native'
 import Ant from 'react-native-vector-icons/Entypo'
 
@@ -8,6 +8,7 @@ import {SingleAudioContextType} from "../types/AudioType";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import TrackPlayer from "react-native-track-player";
+
 
 
 interface Props {
@@ -23,6 +24,7 @@ export const FavoriteScreen:FC<Props> = () => {
     const {setMyFavorites ,setCurrentIndex,currentIndex,playSelectedSong,myFavorites,setIsPlayList,isPlayList,
         setCurrentSong,setIsPlaying} = useAudio()
     const navTheme = DefaultTheme;
+    const [isFocused, setIsFocused] = useState(false);
     const navigation=useNavigation<any>()
     const convertTime = (milliseconds: number) => {
         if(milliseconds){
@@ -58,9 +60,15 @@ export const FavoriteScreen:FC<Props> = () => {
             setMyFavorites(favorites)
         }
     }
-    useEffect(() => {
-        getMyFav()
-    }, []);
+    useFocusEffect(
+        useCallback(
+            () => {
+                getMyFav()
+                setIsFocused(true)
+            },
+            [isFocused],
+        )
+    );
 
 
     const getName = (name: string) => name[0]+name[1]

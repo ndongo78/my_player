@@ -5,17 +5,27 @@ import tw from 'twrnc';
 import {useAudio} from "../store/AudioProvider";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Material from "react-native-vector-icons/MaterialCommunityIcons";
-import {DefaultTheme, useNavigation} from "@react-navigation/native";
+import {DefaultTheme, useFocusEffect, useNavigation} from "@react-navigation/native";
 import TrackPlayer, { State } from 'react-native-track-player';
 import TextTicker from "react-native-text-ticker";
-import React from "react";
+import React, {useCallback} from "react";
+import {SearchBanner} from "../components/SearchBanner";
 
 const HomeScreen=()=>{
- const {currentSong,isPlaying,togglePlayBack,setIsPlayList,audioList,setCurrentSong,setIsPlaying,isPlayList}=useAudio()
+ const {currentSong,isPlaying,togglePlayBack,setIsPlayList,audioList,
+     setCurrentSong,setIsPlaying,isPlayList,isSearch,setIsSearch}=useAudio()
     const navTheme = DefaultTheme;
  const navigation =useNavigation<any>()
     //console.log(State)
 
+    useFocusEffect(
+        useCallback(
+            () => {
+                setIsSearch(false)
+            },
+            [],
+        )
+    )
 
 
     return (
@@ -56,37 +66,40 @@ const HomeScreen=()=>{
               </TouchableOpacity>
               </Pressable>
           }
+          {/*{*/}
+          {/*    isPlayList != "songLists" &&  <TouchableOpacity*/}
+          {/*        style={{*/}
+          {/*            borderWidth: 1,*/}
+          {/*            alignItems: 'center',*/}
+          {/*            justifyContent: 'center',*/}
+          {/*            width: 70,*/}
+          {/*            position: 'absolute',*/}
+          {/*            right: 20,*/}
+          {/*            height: 70,*/}
+          {/*            backgroundColor: navTheme.colors.primary,*/}
+          {/*            borderRadius: 100,*/}
+          {/*            bottom: 60*/}
+          {/*        }}*/}
+          {/*        onPress={async () => {*/}
+          {/*            try {*/}
+          {/*                await TrackPlayer.reset();*/}
+          {/*                // @ts-ignore*/}
+          {/*                await  TrackPlayer.add(audioList)*/}
+          {/*                // @ts-ignore*/}
+          {/*                setCurrentSong(audioList[0])*/}
+          {/*                await TrackPlayer.skip(0);*/}
+          {/*                await TrackPlayer.play();*/}
+          {/*                setIsPlayList('songLists');*/}
+          {/*                setIsPlaying(true)*/}
+          {/*            }catch (e) {*/}
+          {/*                console.log('error load fav',e)*/}
+          {/*            }*/}
+          {/*        }}>*/}
+          {/*        <Ionicons name={'ios-play'} size={30} />*/}
+          {/*    </TouchableOpacity>*/}
+          {/*}*/}
           {
-              isPlayList != "songLists" &&  <TouchableOpacity
-                  style={{
-                      borderWidth: 1,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 70,
-                      position: 'absolute',
-                      right: 20,
-                      height: 70,
-                      backgroundColor: navTheme.colors.primary,
-                      borderRadius: 100,
-                      bottom: 60
-                  }}
-                  onPress={async () => {
-                      try {
-                          await TrackPlayer.reset();
-                          // @ts-ignore
-                          await  TrackPlayer.add(audioList)
-                          // @ts-ignore
-                          setCurrentSong(audioList[0])
-                          await TrackPlayer.skip(0);
-                          await TrackPlayer.play();
-                          setIsPlayList('songLists');
-                          setIsPlaying(true)
-                      }catch (e) {
-                          console.log('error load fav',e)
-                      }
-                  }}>
-                  <Ionicons name={'ios-play'} size={30} />
-              </TouchableOpacity>
+              isSearch && <SearchBanner />
           }
       </>
 )

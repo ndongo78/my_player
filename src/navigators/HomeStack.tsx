@@ -7,11 +7,13 @@ import TopNavigator from "./TopNavigator";
 import tw from "twrnc";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import {DefaultTheme} from "@react-navigation/native";
+import {useAudio} from "../store/AudioProvider";
 
 const Stack = createNativeStackNavigator();
 
 function HomeStack() {
     const navTheme = DefaultTheme;
+    const {isSearch,setIsSearch}=useAudio()
     return (
         <Stack.Navigator>
             <Stack.Screen
@@ -19,10 +21,10 @@ function HomeStack() {
                 component={HomeScreen}
                 options={{ header:(props)=><View style={[{height:90,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
                         <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
-                            <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
+                            {/*<Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />*/}
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Ma musique</Text>
-                        <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> {}}>
+                        <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> setIsSearch(!isSearch)}>
                             <Ionicons name="search" size={30} color={navTheme.colors.text} style={{padding:8}} />
                             {/*<Entypo name="sound-mix" size={30} color={navTheme.colors.text} style={{padding:8}} />*/}
                         </TouchableOpacity>

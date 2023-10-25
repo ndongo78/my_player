@@ -4,6 +4,9 @@ import TrackPlayer, {Capability, State, usePlaybackState,} from 'react-native-tr
 import * as MediaLibrary from 'expo-media-library';
 import {AudioContextType, ChildProps, SingleAudioContextType} from "../types/AudioType";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
+import {handlePress} from "react-native-paper/lib/typescript/components/RadioButton/utils";
+import {useNavigation} from "@react-navigation/native";
 
 const { width } = Dimensions.get('window');
 
@@ -31,6 +34,14 @@ const initialeState: AudioContextType = {
     setIsPlayList:()=>{},
     setIsPlaying:()=>{},
     setCurrentSong:( )=> {},
+    radioList:[],
+    playRadio:()=>{},
+    setCurrentRadio: ()=>{},
+    isSearch: false,
+    setIsSearch: ()=>{},
+    valueSearch: "",
+    setValueSearch: ()=>{},
+    handleSearch:()=>{},
 };
 
 
@@ -60,13 +71,17 @@ const AudioProvider = ({ children }: ChildProps) => {
     const [isMusicPlaying, setIsMusicPlaying] = React.useState(initialeState.isMusicPlaying);
     const [isPlayList, setIsPlayList] = useState(initialeState.isPlayList);
     const [errors, setErrors] = React.useState<any[] | unknown>([]);
+    const [isSearch, setIsSearch] = useState(false);
+    const [valueSearch, setValueSearch] = useState(initialeState.valueSearch);
+    const [radios, setRadios] = useState([]);
     //radio state
     const [isPlayingRadio, setIsPlayingRadio] = React.useState<boolean>(false);
     const [currentRadio, setCurrentRadio] = React.useState<any>(null);
     const [currentIndexRadio, setCurrentIndexRadio] = React.useState<number>(0);
-    const [radioList, setRadioList] = React.useState<any>([]);
+    const [radioList, setRadioList] = React.useState<any>(initialeState.radioList);
     const [playerState,setPlayerState]=React.useState<any>(null)
     const [indexSont, setIndexSont] = useState<any>(null);
+
 
     const getPermission = async () => {
         const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -182,7 +197,8 @@ const AudioProvider = ({ children }: ChildProps) => {
         }
     };
 
-// Appelez la fonction pour récupérer le morceau actuel au démarrage de l'application
+
+
 
 
 
@@ -221,12 +237,28 @@ const AudioProvider = ({ children }: ChildProps) => {
 
           }
 
-        }else {
+        }else if(isPlayList==='radio'){
+            try {
+                await TrackPlayer.reset();
+                // @ts-ignore
+                await  TrackPlayer.add(radioList)
+                const trackIndex= audioList.indexOf(currentRadio);
+                await TrackPlayer.skip(0);
+                await TrackPlayer.play();
+                // setIsPlaying(true);
+                setCurrentRadio(myFavorites[0]);
+            }catch (e) {
+
+            }
+        }
+        else {
             try {
                 await TrackPlayer.reset();
                 // @ts-ignore
                 await  TrackPlayer.add(audioList)
-                await TrackPlayer.skip(0);
+                const trackIndex= audioList.indexOf(currentSong);
+                const currentAudio = audioList[trackIndex];
+                await TrackPlayer.skip(trackIndex);
                 await TrackPlayer.play();
                 setIsPlaying(true);
                 setCurrentSong(audioList[0]);
@@ -310,7 +342,6 @@ const AudioProvider = ({ children }: ChildProps) => {
 
     const   playSelectedSong=async (audio:any,typ:string)=> {
         try {
-
             if(typ==='songList') {
                 try {
                     const trackIndex= audioList.indexOf(audio);
@@ -380,9 +411,143 @@ const AudioProvider = ({ children }: ChildProps) => {
     };
     //fetch radio list
 
+    const getRadios=async ()=> {
+        await axios.get('https://radio.ndongodev.com/stations')
+            .then(response=>{
+                const radioArray = response.data.map((radio:any) => {
+                    if(radio){
+                        return {
+                            id: Math.random(),
+                            url: radio.url,
+                            title: radio.name && radio.name,
+                            artist: radio.country,
+                            artwork: radio.favicon ? radio.favicon :'https://res.cloudinary.com/dr4zipwqn/image/upload/v1698244721/jcfrc5xppie8ct7b7gcl.png',
+                            duration: 10000,
+                            country: radio.country,
+                            countrycode: radio.countrycode,
+                            tags: radio.tags
+
+                        };
+                    }
+                });
+               setRadioList(radioArray)
+                setRadios(radioArray)
+                    //  console.log("radio",response.data)
+            })
+            .catch(err=>{
+                console.log('errr',err)
+            })
+    }
+
+    useEffect(() => {
+          getRadios()
+    }, []);
+
+    //setup radios
+    // const playRadio = async (radio: any) => {
+    //     setIsMusicPlaying(false);
+    //     try {
+    //         if (
+    //             currentRadio === null &&
+    //             isPlayingRadio === false &&
+    //             radio.url !== ''
+    //         ) {
+    //             const status = await soundObject.loadAsync({
+    //                 uri: radio.url,
+    //             });
+    //             if (status.isLoaded) {
+    //                 await soundObject.playAsync();
+    //             }
+    //             setCurrentRadio(radio);
+    //             setIsPlayingRadio(true);
+    //             setCurrentIndexRadio(radioList.indexOf(radio));
+    //             setPlayerState(status);
+    //             return await TrackPlayer.pause();
+    //         }
+    //         if (isPlayingRadio && currentRadio?.changeuuid === radio?.changeuuid) {
+    //             await soundObject.pauseAsync();
+    //             setCurrentRadio(radio);
+    //             return setIsPlayingRadio(false);
+    //         }
+    //
+    //         if (!isPlayingRadio && currentRadio?.changeuuid === radio?.changeuuid) {
+    //             await soundObject.playAsync();
+    //             return setIsPlayingRadio(true);
+    //         }
+    //         if (
+    //             currentRadio?.changeuuid !== radio?.changeuuid &&
+    //             radio.url !== null
+    //         ) {
+    //             setIsPlayingRadio(false);
+    //             await soundObject.stopAsync();
+    //             await soundObject.unloadAsync();
+    //             const status = await soundObject.loadAsync({
+    //                 uri: radio.url,
+    //             });
+    //             if (status.isLoaded) {
+    //                 await soundObject.playAsync();
+    //                 setIsPlayingRadio(true);
+    //             }
+    //             setCurrentRadio(radio);
+    //             setCurrentIndexRadio(radioList.indexOf(radio));
+    //             return await TrackPlayer.pause();
+    //         }
+    //     } catch (error) {
+    //         // console.log(error);
+    //         setErrors(error);
+    //     }
+    // };
+    // //stop radio
+    // const stopRadio = async () => {
+    //     try {
+    //         await soundObject.stopAsync();
+    //         await soundObject.unloadAsync();
+    //         setIsPlayingRadio(false);
+    //         setCurrentRadio(null);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
 
 
+const playRadio=async (audio:any)=> {
+    setIsMusicPlaying(false)
+    try {
+        // await TrackPlayer.reset();
+        // // @ts-ignore
+        // await  TrackPlayer.add(radioList)
+        const trackIndex= radioList.indexOf(audio);
+        const currentAudio = radioList[trackIndex];
+        setCurrentSong(currentAudio);
+        await TrackPlayer.skip(trackIndex);
+        await TrackPlayer.play();
+    }catch (e) {
+        console.log(e)
+    }
+}
 
+const handleSearch=(route:string) => {
+    if (route === "Acceuil" && valueSearch){
+        setAudioList(audioList.filter(item =>  item.title.toLowerCase().includes(valueSearch.toLowerCase())))
+       setIsSearch(false)
+        setValueSearch('')
+    }
+    if (route === "Radio" && valueSearch){
+        const newArray=radioList.filter((item:any) =>  item?.title.toLowerCase().includes(valueSearch.toLowerCase().trim())
+            || item?.countrycode.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
+            item?.country.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
+            item?.tags.toLowerCase().includes(valueSearch.trim().toLowerCase()));
+        if (newArray.length > 0){
+            setRadioList(newArray)
+            setValueSearch('')
+        }else {
+            setRadioList(radios)
+            Alert.alert("Audio not found")
+        }
+
+       setIsSearch(false)
+    }
+}
 
     return (
         <AudioContexts.Provider
@@ -409,7 +574,15 @@ const AudioProvider = ({ children }: ChildProps) => {
                 setIsPlayList,
                 isPlayList,
                 setCurrentSong,
-                setIsPlaying
+                setIsPlaying,
+                radioList,
+                playRadio,
+                setCurrentRadio,
+                isSearch,
+                setIsSearch,
+                valueSearch,
+                setValueSearch,
+                handleSearch
             }}>
             {children}
         </AudioContexts.Provider>

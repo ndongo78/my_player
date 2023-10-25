@@ -86,6 +86,14 @@ export type AudioContextType = {
     setIsPlayList:Dispatch<SetStateAction<string>>
     setCurrentSong:Dispatch<SetStateAction<SingleAudioContextType[]>>
     setIsPlaying:Dispatch<SetStateAction<boolean>>
+    radioList:any;
+    playRadio: (radio:any) => void;
+    setCurrentRadio:Dispatch<SetStateAction<any>>
+    isSearch: boolean
+    setIsSearch:Dispatch<SetStateAction<boolean>>
+    valueSearch: string
+    setValueSearch: Dispatch<SetStateAction<string>>
+    handleSearch:(t:string)=>void
 };
 
 export type UserContextType = {
