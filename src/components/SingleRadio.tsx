@@ -1,17 +1,18 @@
-import {Dimensions, View, Text, TouchableOpacity, StyleSheet, TextInput} from "react-native";
+import {Dimensions, View, Text, TouchableOpacity, StyleSheet, TextInput, Alert, FlatList} from "react-native";
 import React, {memo, useCallback, useEffect} from "react";
 import { RecyclerListView, DataProvider, LayoutProvider } from 'recyclerlistview';
 import {useAudio} from "../store/AudioProvider";
 import tw from "twrnc";
 import {Avatar} from "react-native-paper";
-import {DefaultTheme,useFocusEffect} from "@react-navigation/native";
+import {DefaultTheme, useFocusEffect, useNavigation} from "@react-navigation/native";
 import {SearchBanner} from "./SearchBanner";
 
 const {width}=Dimensions.get('window')
 
 const MyList = () => {
     const navTheme = DefaultTheme;
-    const {radioList,playRadio,setIsPlayList,setCurrentRadio,isSearch,setIsSearch}=useAudio()
+    const {radioList,playRadio,setIsPlayList,setCurrentRadio,isSearch,setIsSearch,searchList}=useAudio()
+    const navigation=useNavigation<any>()
 
     const screenWidth = Dimensions.get('window').width;
     const layoutProvider = new LayoutProvider(
@@ -41,24 +42,24 @@ const MyList = () => {
         // Comparez deux éléments de données pour déterminer s'ils sont identiques.
         return r1 !== r2;
     });
-    const ListItem = ({ data }:any) => (
+    const ListItem = ({ item }:any) => (
         <TouchableOpacity
             style={tw`flex-row items-center gap-x-3`}
             onPress={() => {
-                setCurrentRadio(data)
+                setCurrentRadio(item)
                 setIsPlayList('radio')
-                playRadio(data)
+                playRadio(item)
+                navigation.navigate('RadioPlayer')
             }}
-            key={data.id}
         >
             <Avatar.Image
-                source={{uri:data.artwork ? data.artwork : 'https://res.cloudinary.com/dr4zipwqn/image/upload/v1698244721/jcfrc5xppie8ct7b7gcl.png' }}
+                source={{uri:item.artwork ? item.artwork : 'https://res.cloudinary.com/dr4zipwqn/image/upload/v1698244721/jcfrc5xppie8ct7b7gcl.png' }}
                 style={[tw`my-3`,styles.avatar]}
 
             />
             <View>
-                <Text style={tw`text-[${navTheme.colors.text}] text-2xl`}> {data.title} </Text>
-                <Text style={tw`text-[${navTheme.colors.text}]`}> {data.country} </Text>
+                <Text style={tw`text-[${navTheme.colors.text}] text-2xl`}> {item.title ? item.title : item?.name} </Text>
+                <Text style={tw`text-[${navTheme.colors.text}]`}> {item.country} </Text>
             </View>
         </TouchableOpacity>
     );
@@ -75,10 +76,18 @@ const MyList = () => {
 
     return (
        < >
-           <RecyclerListView
-               layoutProvider={layoutProvider}
-               dataProvider={dataProvider.cloneWithRows(radioList)}
-               rowRenderer={(type, data) => <ListItem data={data} />}
+           {/*<RecyclerListView*/}
+           {/*    layoutProvider={layoutProvider}*/}
+           {/*    dataProvider={dataProvider.cloneWithRows(searchList.length >0 ? searchList : radioList)}*/}
+           {/*    rowRenderer={(type, data) => <ListItem data={data} />}*/}
+           {/*    style={tw`flex-1`}*/}
+           {/*/>*/}
+           <FlatList
+               data={searchList.length >0 ? searchList : radioList}
+               renderItem={ListItem}
+               keyExtractor={(item)=>item.id.toString()+item.countrycode+Math.random().toString()}
+               initialNumToRender={10}
+               maxToRenderPerBatch={10}
            />
            {
                isSearch && <SearchBanner />

@@ -42,6 +42,7 @@ const initialeState: AudioContextType = {
     valueSearch: "",
     setValueSearch: ()=>{},
     handleSearch:()=>{},
+    searchList:[]
 };
 
 
@@ -81,6 +82,7 @@ const AudioProvider = ({ children }: ChildProps) => {
     const [radioList, setRadioList] = React.useState<any>(initialeState.radioList);
     const [playerState,setPlayerState]=React.useState<any>(null)
     const [indexSont, setIndexSont] = useState<any>(null);
+    const [searchList, setSearchList] = useState<any>([]);
 
 
     const getPermission = async () => {
@@ -414,19 +416,20 @@ const AudioProvider = ({ children }: ChildProps) => {
     const getRadios=async ()=> {
         await axios.get('https://radio.ndongodev.com/stations')
             .then(response=>{
-                const radioArray = response.data.map((radio:any) => {
+               // console.log(response.data);
+                const radioArray = response.data.slice(0,100).map((radio:any) => {
                     if(radio){
                         return {
-                            id: Math.random(),
+                            id: radio.changeuuid,
                             url: radio.url,
                             title: radio.name && radio.name,
-                            artist: radio.country,
+                            artist: '',
                             artwork: radio.favicon ? radio.favicon :'https://res.cloudinary.com/dr4zipwqn/image/upload/v1698244721/jcfrc5xppie8ct7b7gcl.png',
                             duration: 10000,
                             country: radio.country,
                             countrycode: radio.countrycode,
-                            tags: radio.tags
-
+                            tags: radio.tags,
+                            url_resolved:radio.url_resolved
                         };
                     }
                 });
@@ -512,13 +515,20 @@ const AudioProvider = ({ children }: ChildProps) => {
 
 const playRadio=async (audio:any)=> {
     setIsMusicPlaying(false)
+    // if(searchList.length > 0) {
+    //     setCurrentRadio(audio)
+    //     setSearchList([])
+    //     setRadioList(radios)
+    //     await TrackPlayer.reset()
+    //     await TrackPlayer.add(radioList)
+    // }
     try {
         // await TrackPlayer.reset();
         // // @ts-ignore
         // await  TrackPlayer.add(radioList)
         const trackIndex= radioList.indexOf(audio);
         const currentAudio = radioList[trackIndex];
-        setCurrentSong(currentAudio);
+        //setCurrentSong(currentAudio);
         await TrackPlayer.skip(trackIndex);
         await TrackPlayer.play();
     }catch (e) {
@@ -526,27 +536,68 @@ const playRadio=async (audio:any)=> {
     }
 }
 
-const handleSearch=(route:string) => {
-    if (route === "Acceuil" && valueSearch){
-        setAudioList(audioList.filter(item =>  item.title.toLowerCase().includes(valueSearch.toLowerCase())))
-       setIsSearch(false)
-        setValueSearch('')
-    }
-    if (route === "Radio" && valueSearch){
-        const newArray=radioList.filter((item:any) =>  item?.title.toLowerCase().includes(valueSearch.toLowerCase().trim())
-            || item?.countrycode.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
-            item?.country.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
-            item?.tags.toLowerCase().includes(valueSearch.trim().toLowerCase()));
-        if (newArray.length > 0){
-            setRadioList(newArray)
-            setValueSearch('')
-        }else {
-            setRadioList(radios)
-            Alert.alert("Audio not found")
-        }
+const handleSearch=async (route:string) => {
+    await axios.get(`https://radio.ndongodev.com/stations/search?q=${valueSearch.trim()}`)
+        .then(async (response)=>{
+            if (response.data && valueSearch != ""){
+                const radioArray = response.data.map((radio:any) => {
+                    if(radio){
+                        return {
+                            id: radio.stationuuid,
+                            url: radio.url,
+                            title: radio.name && radio.name,
+                            artist: radio.country,
+                            artwork: radio.favicon ? radio.favicon :'https://res.cloudinary.com/dr4zipwqn/image/upload/v1698244721/jcfrc5xppie8ct7b7gcl.png',
+                            duration: 10000,
+                            country: radio.country,
+                            countrycode: radio.countrycode,
+                            tags: radio.tags,
+                            url_resolved: radio.url_resolved
+                        };
+                    }
+                });
+               //setSearchList(radioArray)
 
-       setIsSearch(false)
-    }
+                const newArray=[...radioArray, ...radioArray].filter((item:any) =>  item?.title.toLowerCase().includes(valueSearch.toLowerCase().trim())
+                    || item?.countrycode.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
+                    item?.country.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
+                    item?.tags.toLowerCase().includes(valueSearch.trim().toLowerCase()));
+                //setSearchList(newArray);
+                if(newArray.length > 0){
+                    await TrackPlayer.reset()
+                    await TrackPlayer.add([...newArray,...radios])
+                    setRadioList([...newArray,...radios]);
+                    setValueSearch('')
+                    setIsSearch(false)
+                }
+            }else {
+                setRadioList(radios)
+                setSearchList([])
+                setValueSearch('')
+                setIsSearch(false)
+            }
+        })
+        .catch(err=>console.log('error',err))
+    // if (route === "Acceuil" && valueSearch){
+    //     setAudioList(audioList.filter(item =>  item.title.toLowerCase().includes(valueSearch.toLowerCase())))
+    //    setIsSearch(false)
+    //     setValueSearch('')
+    // }
+    // if (route === "Radio" && valueSearch){
+    //     const newArray=radioList.filter((item:any) =>  item?.title.toLowerCase().includes(valueSearch.toLowerCase().trim())
+    //         || item?.countrycode.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
+    //         item?.country.toLowerCase().includes(valueSearch.trim().toLowerCase()) ||
+    //         item?.tags.toLowerCase().includes(valueSearch.trim().toLowerCase()));
+    //     if (newArray.length > 0){
+    //         setRadioList(newArray)
+    //         setValueSearch('')
+    //     }else {
+    //         setRadioList(radios)
+    //         Alert.alert("Audio not found")
+    //     }
+    //
+    //    setIsSearch(false)
+    // }
 }
 
     return (
@@ -582,7 +633,8 @@ const handleSearch=(route:string) => {
                 setIsSearch,
                 valueSearch,
                 setValueSearch,
-                handleSearch
+                handleSearch,
+                searchList
             }}>
             {children}
         </AudioContexts.Provider>

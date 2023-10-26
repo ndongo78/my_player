@@ -81,7 +81,8 @@ function MyTabs() {
                         </TouchableOpacity>
                         <Text style={tw`text-white text-2xl`}>Radios</Text>
                         <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> setIsSearch(!isSearch)}>
-                            <Ionicons name="search" size={30} color={navTheme.colors.text} style={{padding:8}} />
+                            {/*<Ionicons name="search" size={30} color={navTheme.colors.text} style={{padding:8}} />*/}
+                        <Text>Search</Text>
                         </TouchableOpacity>
                     </View>,
                     tabBarLabel:"Radios",

@@ -14,9 +14,24 @@ interface Props {
 
 interface renderProps {
     item: SingleAudioContextType,
-    index: number
+    index: number,
+    loadNewSong:(i:any,index:number,t:string)=>void
+    currentIndex:any
+    getName:(t:string)=>any
 }
 
+
+const RenderItem = ({item,index,currentIndex,loadNewSong,getName}:renderProps) =>{
+  return  <TouchableOpacity style={styles.itemContainer} onPress={()=>loadNewSong(item,index,'songList')} key={item.id}>
+        <View style={[styles.containerTitle,{backgroundColor: currentIndex === index ? "#2fa597" :"#ccc" }]}>
+            <Text style={[styles.itemTitle]}>{getName(item.title)}</Text>
+        </View>
+        {/* <Image style={styles.image} source={require('../images/cover.jpg')} /> */}
+        <View >
+            <Text style={[styles.title]}>{item.title.slice(0,-4)}</Text>
+        </View>
+    </TouchableOpacity>
+}
 export const SongListScreen:FC<Props> = () => {
     const {audioList ,setCurrentIndex,currentIndex,playSelectedSong,setIsPlayList} = useAudio()
     const navigation=useNavigation<any>()
@@ -57,35 +72,21 @@ export const SongListScreen:FC<Props> = () => {
 
     }
 
-    const renderItem = ({ item,index}:renderProps) => (
-        <TouchableOpacity style={styles.itemContainer} onPress={()=>loadNewSong(item,index,'songList')}>
-            <View style={[styles.containerTitle,{backgroundColor: currentIndex === index ? "#2fa597" :"#ccc" }]}>
-                <Text style={[styles.itemTitle]}>{getName(item.title)}</Text>
-            </View>
-            {/* <Image style={styles.image} source={require('../images/cover.jpg')} /> */}
-            <View >
-                <Text style={[styles.title]}>{item.title.slice(0,-4)}</Text>
-            </View>
-        </TouchableOpacity>
-    )
+
     const renderHiddenItem =(data:any, rowMap:any)=><View></View>
     const onRowDidOpen=(data:any)=>{}
 
+    const renderItem=({item,index}:any)=><RenderItem item={item} index={index} loadNewSong={loadNewSong} currentIndex={currentIndex } getName={getName} />
+
     return (
         <View style={styles.container}>
-            <SwipeListView
-                disableRightSwipe
-                data={audioList}
-                renderItem={renderItem}
-                renderHiddenItem={renderHiddenItem}
-                leftOpenValue={75}
-                rightOpenValue={-50}
-                previewRowKey={"0"}
-                previewOpenValue={-40}
-                previewOpenDelay={3000}
-                onRowDidOpen={onRowDidOpen}
-                closeOnScroll={true}
-                keyExtractor={(list:any)=> list.id}
+
+                <FlatList
+                    data={audioList}
+                    renderItem={renderItem}
+                    keyExtractor={(item)=>item.id.toString()}
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
             />
         </View>
     )

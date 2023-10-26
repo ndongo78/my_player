@@ -8,6 +8,7 @@ import tw from "twrnc";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import {DefaultTheme} from "@react-navigation/native";
 import {useAudio} from "../store/AudioProvider";
+import RadioPlayer from "../screens/RadioPlayer";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,21 @@ function HomeStack() {
             <Stack.Screen
                 name="Player"
                 component={Player}
+                options={{
+                header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
+                    <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>
+                        <Ionicons name="chevron-back" size={30} color={navTheme.colors.text} style={{padding:8}} />
+                    </TouchableOpacity>
+                    <Text style={tw`text-white text-2xl`}>Now playing</Text>
+                    <TouchableOpacity style={[styles.backButton,tw`mr-2`]} onPress={()=> {}}>
+                        <Ionicons name="ellipsis-vertical-outline" size={30} color={navTheme.colors.text} style={{padding:8}} />
+                    </TouchableOpacity>
+                    </View>,
+                }}
+            />
+            <Stack.Screen
+                name="RadioPlayer"
+                component={RadioPlayer}
                 options={{
                 header:(props)=><View style={[{height:80,backgroundColor:navTheme.colors.background},tw`flex flex-row items-center justify-between`]}>
                     <TouchableOpacity style={[styles.backButton,]} onPress={()=> {}}>

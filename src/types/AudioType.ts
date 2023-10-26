@@ -94,6 +94,7 @@ export type AudioContextType = {
     valueSearch: string
     setValueSearch: Dispatch<SetStateAction<string>>
     handleSearch:(t:string)=>void
+    searchList:any;
 };
 
 export type UserContextType = {
